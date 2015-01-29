@@ -191,7 +191,7 @@ void lval_expr_print(lval* v, char open, char close) {
 
 void lval_print(lval* v) {
   switch (v->type) {
-    case LVAL_DOUBLE:  printf("%f", v->u->doub); break;
+    case LVAL_DOUBLE:  printf("%g", v->u->doub); break;
     case LVAL_NUM:     printf("%li", v->u->num); break;
     case LVAL_ERR:     printf("Error: %s", v->err); break;
     case LVAL_SYM:     printf("%s", v->sym); break;
