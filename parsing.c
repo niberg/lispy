@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "mpc.h"
 
 /* If we are compiling on Windows compile these functions */
@@ -296,6 +297,7 @@ lval* builtin_op(lval* a, char* op) {
         if (strcmp(op, "+") == 0) { x->u->num += y->u->num; }
         if (strcmp(op, "-") == 0) { x->u->num -= y->u->num; }
         if (strcmp(op, "*") == 0) { x->u->num *= y->u->num; }
+        if (strcmp(op, "%") == 0) { x->u->num %= y->u->num; }
         if (strcmp(op, "/") == 0) {
             if (y->u->num == 0) {
                 lval_del(x); lval_del(y);
@@ -307,6 +309,7 @@ lval* builtin_op(lval* a, char* op) {
         if (strcmp(op, "+") == 0) { x->u->doub += y->u->doub; }
         if (strcmp(op, "-") == 0) { x->u->doub -= y->u->doub; }
         if (strcmp(op, "*") == 0) { x->u->doub *= y->u->doub; }
+        if (strcmp(op, "%") == 0) { x->u->doub = fmod(x->u->doub, y->u->doub); }
         if (strcmp(op, "/") == 0) {
             if (y->u->doub == 0) {
                 lval_del(x); lval_del(y);
@@ -318,6 +321,7 @@ lval* builtin_op(lval* a, char* op) {
         if (strcmp(op, "+") == 0) { x->u->doub += (double)y->u->num; }
         if (strcmp(op, "-") == 0) { x->u->doub -= (double)y->u->num; }
         if (strcmp(op, "*") == 0) { x->u->doub *= (double)y->u->num; }
+        if (strcmp(op, "%") == 0) { x->u->doub = fmod(x->u->doub, (double)y->u->num); }
         if (strcmp(op, "/") == 0) {
             if (y->u->num == 0) {
                 lval_del(x); lval_del(y);
@@ -331,6 +335,7 @@ lval* builtin_op(lval* a, char* op) {
         if (strcmp(op, "+") == 0) { x->u->doub = (double) x->u->num + y->u->doub; }
         if (strcmp(op, "-") == 0) { x->u->doub = (double) x->u->num - y->u->doub; }
         if (strcmp(op, "*") == 0) { x->u->doub = (double) x->u->num * y->u->doub; }
+        if (strcmp(op, "%") == 0) { x->u->doub = fmod((double) x->u->num, y->u->doub); }
         if (strcmp(op, "/") == 0) {
             if (y->u->doub == 0) {
                 lval_del(x); lval_del(y);
@@ -358,7 +363,7 @@ mpca_lang(MPCA_LANG_DEFAULT,
   "                                          \
     double : /-?[0-9]*[\.]{1}[0-9]+/;           \
     number : /-?[\.]{0}[0-9]+[\.]{0}/;           \
-    symbol : '+' | '-' | '*' | '/' ;         \
+    symbol : '+' | '-' | '*' | '/' | '%' ;         \
     sexpr  : '(' <expr>* ')' ;               \
     expr   : <double> | <number> | <symbol> | <sexpr> ; \
     lispy  : /^/ <expr>* /$/ ;               \
