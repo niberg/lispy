@@ -1,10 +1,12 @@
 #include "mpc.h"
+#include <stdlib.h>
 
 #ifdef _WIN32
 
 static char buffer[2048];
 
-char* readline(char* prompt) {
+char* readline(char* prompt) 
+{
   fputs(prompt, stdout);
   fgets(buffer, 2048, stdin);
   char* cpy = malloc(strlen(buffer)+1);
@@ -73,7 +75,8 @@ struct lval {
 
 };
 
-lval* lval_num(long x) {
+lval* lval_num(long x) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_NUM;
   v->u = malloc(sizeof(val));
@@ -90,10 +93,11 @@ lval* lval_doub(double x)
   return v;
 }
 
-lval* lval_err(char* fmt, ...) {
+lval* lval_err(char* fmt, ...) 
+{
+  va_list va;
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_ERR;  
-  va_list va;
   va_start(va, fmt);  
   v->err = malloc(512);  
   vsnprintf(v->err, 511, fmt, va);  
@@ -103,7 +107,8 @@ lval* lval_err(char* fmt, ...) {
 
 }
 
-lval* lval_sym(char* s) {
+lval* lval_sym(char* s) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_SYM;
   v->sym = malloc(strlen(s) + 1);
@@ -112,7 +117,8 @@ lval* lval_sym(char* s) {
 
 }
 
-lval* lval_str(char* s) {
+lval* lval_str(char* s) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_STR;
   v->str = malloc(strlen(s) + 1);
@@ -121,7 +127,8 @@ lval* lval_str(char* s) {
 
 }
 
-lval* lval_builtin(lbuiltin func) {
+lval* lval_builtin(lbuiltin func) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_FUN;
   v->builtin = func;
@@ -131,7 +138,8 @@ lval* lval_builtin(lbuiltin func) {
 
 lenv* lenv_new(void);
 
-lval* lval_lambda(lval* formals, lval* body) {
+lval* lval_lambda(lval* formals, lval* body) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_FUN;  
   v->builtin = NULL;  
@@ -142,7 +150,8 @@ lval* lval_lambda(lval* formals, lval* body) {
 
 }
 
-lval* lval_sexpr(void) {
+lval* lval_sexpr(void) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_SEXPR;
   v->count = 0;
@@ -151,7 +160,8 @@ lval* lval_sexpr(void) {
 
 }
 
-lval* lval_qexpr(void) {
+lval* lval_qexpr(void) 
+{
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_QEXPR;
   v->count = 0;
@@ -162,7 +172,8 @@ lval* lval_qexpr(void) {
 
 void lenv_del(lenv* e);
 
-void lval_del(lval* v) {
+void lval_del(lval* v) 
+{
 
   switch (v->type) {
     case LVAL_NUM:
@@ -202,7 +213,8 @@ void lval_del(lval* v) {
 
 lenv* lenv_copy(lenv* e);
 
-lval* lval_copy(lval* v) {
+lval* lval_copy(lval* v) 
+{
   lval* x = malloc(sizeof(lval));
   x->type = v->type;
   switch (v->type) {
@@ -252,7 +264,8 @@ lval* lval_copy(lval* v) {
 
 }
 
-lval* lval_add(lval* v, lval* x) {
+lval* lval_add(lval* v, lval* x) 
+{
   v->count++;
   v->cell = realloc(v->cell, sizeof(lval*) * v->count);
   v->cell[v->count-1] = x;
@@ -260,7 +273,8 @@ lval* lval_add(lval* v, lval* x) {
 
 }
 
-lval* lval_join(lval* x, lval* y) {  
+lval* lval_join(lval* x, lval* y) 
+{  
   for (int i = 0; i < y->count; i++) {
     x = lval_add(x, y->cell[i]);
 
@@ -270,7 +284,8 @@ lval* lval_join(lval* x, lval* y) {
   return x;
 }
 
-lval* lval_pop(lval* v, int i) {
+lval* lval_pop(lval* v, int i) 
+{
   lval* x = v->cell[i];  
   memmove(&v->cell[i],
       &v->cell[i+1], sizeof(lval*) * (v->count-i-1));  
@@ -353,14 +368,18 @@ void lval_print(lval* v) {
   }
 }
 
-void lval_println(lval* v) { lval_print(v); putchar('\n');  }
+void lval_println(lval* v) 
+{ 
+  lval_print(v); putchar('\n');  
+}
 
 int is_numerical(lval* a)
 {
   return (a->type == LVAL_NUM || a->type == LVAL_DOUBLE);
 }
 
-int lval_eq(lval* x, lval* y) {
+int lval_eq(lval* x, lval* y) 
+{
 
   if (!is_numerical(x) && !is_numerical(y))
     if (x->type != y->type) 
@@ -406,7 +425,8 @@ int lval_eq(lval* x, lval* y) {
 
 }
 
-char* ltype_name(int t) {
+char* ltype_name(int t) 
+{
   switch(t) {
     case LVAL_FUN: return "Function";
     case LVAL_NUM: return "Number";
@@ -432,7 +452,8 @@ struct lenv {
 
 };
 
-lenv* lenv_new(void) {
+lenv* lenv_new(void) 
+{
   lenv* e = malloc(sizeof(lenv));
   e->par = NULL;
   e->count = 0;
@@ -442,7 +463,8 @@ lenv* lenv_new(void) {
 
 }
 
-void lenv_del(lenv* e) {
+void lenv_del(lenv* e) 
+{
   for (int i = 0; i < e->count; i++) {
     free(e->syms[i]);
     lval_del(e->vals[i]);
@@ -454,7 +476,8 @@ void lenv_del(lenv* e) {
 
 }
 
-lenv* lenv_copy(lenv* e) {
+lenv* lenv_copy(lenv* e) 
+{
   lenv* n = malloc(sizeof(lenv));
   n->par = e->par;
   n->count = e->count;
@@ -470,7 +493,8 @@ lenv* lenv_copy(lenv* e) {
 
 }
 
-lval* lenv_get(lenv* e, lval* k) {
+lval* lenv_get(lenv* e, lval* k) 
+{
 
   for (int i = 0; i < e->count; i++) {
     if (strcmp(e->syms[i], k->sym) == 0) { return lval_copy(e->vals[i]);  }
@@ -487,7 +511,8 @@ lval* lenv_get(lenv* e, lval* k) {
 
 }
 
-void lenv_put(lenv* e, lval* k, lval* v) {
+void lenv_put(lenv* e, lval* k, lval* v) 
+{
 
   for (int i = 0; i < e->count; i++) {
     if (strcmp(e->syms[i], k->sym) == 0) {
@@ -508,7 +533,8 @@ void lenv_put(lenv* e, lval* k, lval* v) {
 
 }
 
-void lenv_def(lenv* e, lval* k, lval* v) {
+void lenv_def(lenv* e, lval* k, lval* v) 
+{
   while (e->par) { e = e->par;  }
   lenv_put(e, k, v);
 
@@ -535,7 +561,8 @@ void lenv_def(lenv* e, lval* k, lval* v) {
 
 lval* lval_eval(lenv* e, lval* v);
 
-lval* builtin_lambda(lenv* e, lval* a) {
+lval* builtin_lambda(lenv* e, lval* a) 
+{
   LASSERT_NUM("\\", a, 2);
   LASSERT_TYPE("\\", a, 0, LVAL_QEXPR);
   LASSERT_TYPE("\\", a, 1, LVAL_QEXPR);
@@ -554,13 +581,15 @@ lval* builtin_lambda(lenv* e, lval* a) {
   return lval_lambda(formals, body);
 }
 
-lval* builtin_list(lenv* e, lval* a) {
+lval* builtin_list(lenv* e, lval* a) 
+{
   a->type = LVAL_QEXPR;
   return a;
 
 }
 
-lval* builtin_head(lenv* e, lval* a) {
+lval* builtin_head(lenv* e, lval* a) 
+{
   LASSERT_NUM("head", a, 1);
   LASSERT_TYPE("head", a, 0, LVAL_QEXPR);
   LASSERT_NOT_EMPTY("head", a, 0);
@@ -571,7 +600,8 @@ lval* builtin_head(lenv* e, lval* a) {
 
 }
 
-lval* builtin_tail(lenv* e, lval* a) {
+lval* builtin_tail(lenv* e, lval* a) 
+{
   LASSERT_NUM("tail", a, 1);
   LASSERT_TYPE("tail", a, 0, LVAL_QEXPR);
   LASSERT_NOT_EMPTY("tail", a, 0);
@@ -582,7 +612,8 @@ lval* builtin_tail(lenv* e, lval* a) {
 
 }
 
-lval* builtin_eval(lenv* e, lval* a) {
+lval* builtin_eval(lenv* e, lval* a) 
+{
   LASSERT_NUM("eval", a, 1);
   LASSERT_TYPE("eval", a, 0, LVAL_QEXPR);
 
@@ -592,7 +623,8 @@ lval* builtin_eval(lenv* e, lval* a) {
 
 }
 
-lval* builtin_len(lenv* e, lval* a) {
+lval* builtin_len(lenv* e, lval* a) 
+{
   LASSERT_NUM("len", a, 1);
   LASSERT_TYPE("len", a, 0, LVAL_QEXPR);
   lval* v = lval_num(a->cell[0]->count);
@@ -601,7 +633,8 @@ lval* builtin_len(lenv* e, lval* a) {
 
 }
 
-lval* builtin_init(lenv* e, lval* a) {
+lval* builtin_init(lenv* e, lval* a) 
+{
   LASSERT_NUM("init", a, 1);
   LASSERT_TYPE("init", a, 0, LVAL_QEXPR);
   LASSERT_NOT_EMPTY("init", a, 0);
@@ -611,7 +644,8 @@ lval* builtin_init(lenv* e, lval* a) {
   return v;
 }
 
-lval* builtin_join(lenv* e, lval* a) {
+lval* builtin_join(lenv* e, lval* a) 
+{
 
   for (int i = 0; i < a->count; i++) {
     LASSERT_TYPE("join", a, i, LVAL_QEXPR);
@@ -631,7 +665,8 @@ lval* builtin_join(lenv* e, lval* a) {
 
 }
 
-lval* builtin_op(lenv* e, lval* a, char* op) {
+lval* builtin_op(lenv* e, lval* a, char* op) 
+{
 
   /* Ensure all arguments are numbers or doubles */
   for (int i = 0; i < a->count; i++) {
@@ -737,36 +772,48 @@ lval* builtin_op(lenv* e, lval* a, char* op) {
 
 
 
-lval* builtin_add(lenv* e, lval* a) { 
+lval* builtin_add(lenv* e, lval* a) 
+{ 
   return builtin_op(e, a, "+"); 
 }
-lval* builtin_sub(lenv* e, lval* a) { 
+
+lval* builtin_sub(lenv* e, lval* a) 
+{ 
   return builtin_op(e, a, "-");  
 }
-lval* builtin_mul(lenv* e, lval* a) { 
+
+lval* builtin_mul(lenv* e, lval* a) 
+{ 
   return builtin_op(e, a, "*");  
 }
-lval* builtin_div(lenv* e, lval* a) { 
+
+lval* builtin_div(lenv* e, lval* a) 
+{ 
   return builtin_op(e, a, "/");  
 }
 
-lval* builtin_pow(lenv* e, lval* a) {
+lval* builtin_pow(lenv* e, lval* a) 
+{
   return builtin_op(e, a, "^");
 }
 
-lval* builtin_mod(lenv* e, lval* a) {
+lval* builtin_mod(lenv* e, lval* a) 
+{
   return builtin_op(e, a, "%");
 }
 
-lval* builtin_max(lenv* e, lval* a) {
+lval* builtin_max(lenv* e, lval* a) 
+{
   return builtin_op(e, a, "max");
 }
 
-lval* builtin_min(lenv* e, lval* a) {
+lval* builtin_min(lenv* e, lval* a) 
+{
   return builtin_op(e, a, "min");
 }
 
-lval* builtin_var(lenv* e, lval* a, char* func) {
+lval* builtin_var(lenv* e, lval* a, char* func) 
+{
   LASSERT_TYPE(func, a, 0, LVAL_QEXPR);
 
   lval* syms = a->cell[0];
@@ -794,10 +841,18 @@ lval* builtin_var(lenv* e, lval* a, char* func) {
 
 }
 
-lval* builtin_def(lenv* e, lval* a) { return builtin_var(e, a, "def");  }
-lval* builtin_put(lenv* e, lval* a) { return builtin_var(e, a, "=");  }
+lval* builtin_def(lenv* e, lval* a) 
+{ 
+  return builtin_var(e, a, "def");  
+}
 
-lval* builtin_ord(lenv* e, lval* a, char* op) {
+lval* builtin_put(lenv* e, lval* a) 
+{ 
+  return builtin_var(e, a, "=");  
+}
+
+lval* builtin_ord(lenv* e, lval* a, char* op) 
+{
   LASSERT_NUM(op, a, 2);
   if (a->cell[0]->type != LVAL_NUM && a->cell[0]->type != LVAL_DOUBLE) {
     lval* err = lval_err("Function '%s' received incorrect parameters "
@@ -896,31 +951,38 @@ lval* builtin_ord(lenv* e, lval* a, char* op) {
   return lval_num(r);
 }
 
-lval* builtin_gt(lenv* e, lval* a) { 
+lval* builtin_gt(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, ">");   
 }
 
-lval* builtin_lt(lenv* e, lval* a) { 
+lval* builtin_lt(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, "<");   
 }
 
-lval* builtin_ge(lenv* e, lval* a) { 
+lval* builtin_ge(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, ">=");  
 }
 
-lval* builtin_le(lenv* e, lval* a) { 
+lval* builtin_le(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, "<=");  
 }
 
-lval* builtin_and(lenv* e, lval* a) { 
+lval* builtin_and(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, "&&");  
 }
 
-lval* builtin_or(lenv* e, lval* a) { 
+lval* builtin_or(lenv* e, lval* a) 
+{ 
   return builtin_ord(e, a, "||");  
 }
 
-lval* builtin_not(lenv* e, lval* a) {
+lval* builtin_not(lenv* e, lval* a) 
+{
   LASSERT_NUM("!", a, 1);
   LASSERT_TYPE("!", a, 0, LVAL_NUM);
   int r = !(a->cell[0]->u->num);
@@ -928,7 +990,8 @@ lval* builtin_not(lenv* e, lval* a) {
   return lval_num(r);
 }
 
-lval* builtin_cmp(lenv* e, lval* a, char* op) {
+lval* builtin_cmp(lenv* e, lval* a, char* op) 
+{
   LASSERT_NUM(op, a, 2);
   int r;
   if (strcmp(op, "==") == 0) { r =  lval_eq(a->cell[0], a->cell[1]);  }
@@ -938,10 +1001,18 @@ lval* builtin_cmp(lenv* e, lval* a, char* op) {
 
 }
 
-lval* builtin_eq(lenv* e, lval* a) { return builtin_cmp(e, a, "==");  }
-lval* builtin_ne(lenv* e, lval* a) { return builtin_cmp(e, a, "!=");  }
+lval* builtin_eq(lenv* e, lval* a) 
+{ 
+  return builtin_cmp(e, a, "==");  
+}
 
-lval* builtin_if(lenv* e, lval* a) {
+lval* builtin_ne(lenv* e, lval* a) 
+{ 
+  return builtin_cmp(e, a, "!=");  
+}
+
+lval* builtin_if(lenv* e, lval* a) 
+{
   LASSERT_NUM("if", a, 3);
   LASSERT_TYPE("if", a, 0, LVAL_NUM);
   LASSERT_TYPE("if", a, 1, LVAL_QEXPR);
@@ -966,7 +1037,8 @@ lval* builtin_if(lenv* e, lval* a) {
 
 lval* lval_read(mpc_ast_t* t);
 
-lval* builtin_load(lenv* e, lval* a) {
+lval* builtin_load(lenv* e, lval* a) 
+{
   LASSERT_NUM("load", a, 1);
   LASSERT_TYPE("load", a, 0, LVAL_STR);
 
@@ -1012,7 +1084,8 @@ lval* builtin_load(lenv* e, lval* a) {
 
 }
 
-lval* builtin_print(lenv* e, lval* a) {
+lval* builtin_print(lenv* e, lval* a) 
+{
 
   /* Print each argument followed by a space */
   for (int i = 0; i < a->count; i++) {
@@ -1028,7 +1101,8 @@ lval* builtin_print(lenv* e, lval* a) {
 
 }
 
-lval* builtin_error(lenv* e, lval* a) {
+lval* builtin_error(lenv* e, lval* a) 
+{
   LASSERT_NUM("error", a, 1);
   LASSERT_TYPE("error", a, 0, LVAL_STR);
 
@@ -1041,7 +1115,16 @@ lval* builtin_error(lenv* e, lval* a) {
 
 }
 
-void lenv_add_builtin(lenv* e, char* name, lbuiltin func) {
+lval* builtin_exit(lenv* e, lval* a)
+{
+  LASSERT_NUM("exit", a, 1);
+  LASSERT_TYPE("exit", a, 0, LVAL_NUM);
+  exit(a->cell[0]->u->num);
+  return lval_sexpr();
+}
+
+void lenv_add_builtin(lenv* e, char* name, lbuiltin func) 
+{
   lval* k = lval_sym(name);
   lval* v = lval_builtin(func);
   lenv_put(e, k, v);
@@ -1049,7 +1132,8 @@ void lenv_add_builtin(lenv* e, char* name, lbuiltin func) {
 
 }
 
-void lenv_add_builtins(lenv* e) {
+void lenv_add_builtins(lenv* e) 
+{
   /* Variable Functions */
   lenv_add_builtin(e, "\\",  builtin_lambda); 
   lenv_add_builtin(e, "def", builtin_def);
@@ -1061,16 +1145,16 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "tail", builtin_tail);
   lenv_add_builtin(e, "eval", builtin_eval);
   lenv_add_builtin(e, "join", builtin_join);
-  lenv_add_builtin(e, "len", builtin_len);
+  lenv_add_builtin(e, "len",  builtin_len);
   lenv_add_builtin(e, "init", builtin_init);
 
   /* Mathematical Functions */
-  lenv_add_builtin(e, "+", builtin_add);
-  lenv_add_builtin(e, "-", builtin_sub);
-  lenv_add_builtin(e, "*", builtin_mul);
-  lenv_add_builtin(e, "/", builtin_div);
-  lenv_add_builtin(e, "^", builtin_pow);
-  lenv_add_builtin(e, "%", builtin_mod);
+  lenv_add_builtin(e, "+",   builtin_add);
+  lenv_add_builtin(e, "-",   builtin_sub);
+  lenv_add_builtin(e, "*",   builtin_mul);
+  lenv_add_builtin(e, "/",   builtin_div);
+  lenv_add_builtin(e, "^",   builtin_pow);
+  lenv_add_builtin(e, "%",   builtin_mod);
   lenv_add_builtin(e, "min", builtin_min);
   lenv_add_builtin(e, "max", builtin_max);
 
@@ -1079,7 +1163,7 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "&&", builtin_and);
   lenv_add_builtin(e, "||", builtin_or);
   lenv_add_builtin(e, "==", builtin_eq);
-  lenv_add_builtin(e, "!", builtin_not);
+  lenv_add_builtin(e, "!",  builtin_not);
   lenv_add_builtin(e, "!=", builtin_ne);
   lenv_add_builtin(e, ">",  builtin_gt);
   lenv_add_builtin(e, "<",  builtin_lt);
@@ -1090,11 +1174,15 @@ void lenv_add_builtins(lenv* e) {
   lenv_add_builtin(e, "load",  builtin_load); 
   lenv_add_builtin(e, "error", builtin_error);
   lenv_add_builtin(e, "print", builtin_print);
+
+  /* System Functions */
+  lenv_add_builtin(e, "exit", builtin_exit);
 }
 
 /* Evaluation */
 
-lval* lval_call(lenv* e, lval* f, lval* a) {
+lval* lval_call(lenv* e, lval* f, lval* a) 
+{
 
   if (f->builtin) { return f->builtin(e, a);  }
 
@@ -1165,7 +1253,8 @@ lval* lval_call(lenv* e, lval* f, lval* a) {
 
 }
 
-lval* lval_eval_sexpr(lenv* e, lval* v) {
+lval* lval_eval_sexpr(lenv* e, lval* v) 
+{
 
   for (int i = 0; i < v->count; i++) { v->cell[i] = lval_eval(e, v->cell[i]);  }
   for (int i = 0; i < v->count; i++) { if (v->cell[i]->type == LVAL_ERR) { return lval_take(v, i);  }  }
@@ -1191,35 +1280,41 @@ lval* lval_eval_sexpr(lenv* e, lval* v) {
 
 }
 
-lval* lval_eval(lenv* e, lval* v) {
+lval* lval_eval(lenv* e, lval* v) 
+{
   if (v->type == LVAL_SYM) {
     lval* x = lenv_get(e, v);
     lval_del(v);
     return x;
 
   }
-  if (v->type == LVAL_SEXPR) { return lval_eval_sexpr(e, v);  }
+  if (v->type == LVAL_SEXPR) { 
+    return lval_eval_sexpr(e, v);  
+  }
   return v;
 
 }
 
 /* Reading */
 
-lval* lval_read_num(mpc_ast_t* t) {
+lval* lval_read_num(mpc_ast_t* t) 
+{
   errno = 0;
   long x = strtol(t->contents, NULL, 10);
   return errno != ERANGE ? lval_num(x) : lval_err("Invalid Number.");
 
 }
 
-lval* lval_read_doub(mpc_ast_t* t) {
+lval* lval_read_doub(mpc_ast_t* t) 
+{
   errno = 0;
   double x = strtod(t->contents, NULL);
   return errno != ERANGE ?
-    lval_doub(x) : lval_err("invalid number");
+    lval_doub(x) : lval_err("Invalid Number");
 }
 
-lval* lval_read_str(mpc_ast_t* t) {
+lval* lval_read_str(mpc_ast_t* t) 
+{
   /* Cut off the final quote character */
   t->contents[strlen(t->contents)-1] = '\0';
   /* Copy the string missing out the first quote character */
@@ -1235,7 +1330,8 @@ lval* lval_read_str(mpc_ast_t* t) {
 
 }
 
-lval* lval_read(mpc_ast_t* t) {
+lval* lval_read(mpc_ast_t* t) 
+{
 
   if (strstr(t->tag, "double")) { return lval_read_doub(t); }
   if (strstr(t->tag, "number")) { return lval_read_num(t);  }
@@ -1262,7 +1358,8 @@ lval* lval_read(mpc_ast_t* t) {
 
 /* Main */
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{
 
   Double  = mpc_new("double");
   Number  = mpc_new("number");
@@ -1291,6 +1388,14 @@ int main(int argc, char** argv) {
 
   lenv* e = lenv_new();
   lenv_add_builtins(e);
+
+  /* Load standard library */
+  char filename[] = {"prelude.lispy"};
+  lval* prelude = lval_add(lval_sexpr(), lval_str(filename));
+  lval* x = builtin_load(e, prelude);
+  if (x->type == LVAL_ERR)
+    lval_println(x);
+  lval_del(x);
 
   /* Interactive Prompt */
   if (argc == 1) {
